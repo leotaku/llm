@@ -688,7 +688,6 @@ not.
                              :connect-timeout connect-timeout
                              :decode decode
                              :else (lambda (error)
-                                     (setq buffer (current-buffer))
                                      (when (or (functionp else) (symbolp else))
                                        (funcall else (plz-media-type-else
                                                       plz-media-type--current
@@ -702,12 +701,12 @@ not.
                              :headers headers
                              :noquery noquery
                              :filter (lambda (process chunk)
+                                       (setq buffer (process-buffer process))
                                        (plz-media-type-process-filter process media-types chunk))
                              :timeout timeout
                              :then (if (symbolp then)
                                        then
                                      (lambda (_)
-                                       (setq buffer (current-buffer))
                                        (when (or (functionp then) (symbolp then))
                                          (funcall then (plz-media-type-then
                                                         plz-media-type--current
