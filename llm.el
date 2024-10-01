@@ -540,6 +540,7 @@ methods."
     (kill-buffer buf)))
 
 (cl-defmethod llm-cancel-request ((proc process))
+  (signal-process proc 'SIGTERM)
   (delete-process proc))
 
 (cl-defgeneric llm-name (_)

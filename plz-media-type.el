@@ -692,16 +692,9 @@ not.
                                        (funcall else (plz-media-type-else
                                                       plz-media-type--current
                                                       error))))
-                             :finally (lambda ()
-                                        (unwind-protect
-                                            (when (functionp finally)
-                                              (funcall finally))
-                                          (when (buffer-live-p buffer)
-                                            (kill-buffer buffer))))
                              :headers headers
                              :noquery noquery
                              :filter (lambda (process chunk)
-                                       (setq buffer (process-buffer process))
                                        (plz-media-type-process-filter process media-types chunk))
                              :timeout timeout
                              :then (if (symbolp then)
@@ -714,6 +707,14 @@ not.
               (cond ((bufferp result)
                      (plz-media-type--handle-sync-response result))
                     ((processp result)
+                     (setf (process-get result :plz-finally)
+                           (lambda ()
+                             (unwind-protect
+                                 (when (functionp finally)
+                                   (funcall finally))
+                               (when-let* ((buffer (process-buffer result))
+                                           (_ (buffer-live-p buffer)))
+                                 (kill-buffer buffer)))))
                      result)
                     (t (user-error "Unexpected response: %s" result))))
           ;; TODO: How to kill the buffer for sync requests that raise an error?
